@@ -1,3 +1,4 @@
+import asyncio
 import os
 import json
 import random
@@ -455,24 +456,47 @@ async def handle_game_move(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception: pass
 
 # --- INICIALIZACIÓN CON WEBHOOKS (MODO WEB CLOUD) ---
-def main():
+async def start_bot():
+    """Inicializa la aplicación y activa el Webhook dentro del loop activo."""
     load_stats()
     application = Application.builder().token(TOKEN).build()
 
+    # Registro de manejadores
     application.add_handler(CommandHandler("puzzgame", start_puzzle))
     application.add_handler(CommandHandler("puzztop", show_top))
     application.add_handler(CommandHandler("puzzrank", show_rank))
     application.add_handler(CallbackQueryHandler(handle_game_move, pattern="^(puzz_)"))
 
-    print(f"Iniciando Webhook en el puerto {PORT}...")
+    print(f"Configurando Webhook en puerto {PORT}...")
     
-    # Arranca el servidor web embebido para recibir peticiones HTTP de Telegram
-    application.run_webhook(
+    # Inicializamos la app de forma asíncrona explícita
+    await application.initialize()
+    
+    # Activamos el webhook esperando de forma asíncrona la respuesta de la API de Telegram
+    await application.updater.start_webhook(
         listen="0.0.0.0",
         port=PORT,
-        url_path=TOKEN, # Agrega seguridad para que nadie más mande datos falsos al puerto
+        url_path=TOKEN,
         webhook_url=f"{WEBHOOK_URL}/{TOKEN}"
     )
+    
+    # Iniciamos el servidor de la aplicación para que empiece a escuchar el puerto
+    await application.start()
+    print("Bot del Juego del 15 — Webhook en línea de forma segura.")
+    
+    # Mantenemos el proceso corriendo de forma infinita esperando los eventos
+    while True:
+        await asyncio.sleep(3600)
+
+def main():
+    """Función de entrada principal que inicializa el bucle de eventos correctamente."""
+    try:
+        # Forzamos la creación de un nuevo bucle de eventos limpio para el hilo principal
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(start_bot())
+    except (KeyboardInterrupt, SystemExit):
+        print("Bot detenido localmente.")
 
 if __name__ == "__main__":
     main()

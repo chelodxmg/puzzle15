@@ -10,7 +10,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Cont
 TOKEN = "8936249846:AAEZ6Soic6kF-kGTa2Nw43S-SuLXrYdSSos"
 
 # RUTA CORREGIDA: Ahora es relativa al proyecto. Funciona tanto en tu PC como en servidores Linux en la web.
-JSON_PATH = os.path.join(os.getcwd(), "puzzle_game.json")
+JSON_PATH = os.path.join(os.getcwd(), "puzzle-sim-bot.json")
 
 # URL de tu hosting (Ej: https://tu-bot-puzzle.onrender.com). Reemplazala por la que te dé tu hoster.
 WEBHOOK_URL = "https://puzzle-sim-bot.onrender.com"
